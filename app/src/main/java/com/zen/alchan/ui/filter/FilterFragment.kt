@@ -177,6 +177,10 @@ class FilterFragment : BaseFragment<FragmentFilterBinding, FilterViewModel>() {
                 viewModel.updateHideSeriesOnList(filterHideOnListCheckBox.isChecked)
             }
 
+            filterHideCompletedCheckBox.setOnClickListener {
+                viewModel.updateHideCompleted(filterHideCompletedCheckBox.isChecked)
+            }
+
             filterShowOnListCheckBox.setOnClickListener {
                 viewModel.updateOnlyShowSeriesOnList(filterShowOnListCheckBox.isChecked)
             }
@@ -286,6 +290,9 @@ class FilterFragment : BaseFragment<FragmentFilterBinding, FilterViewModel>() {
             },
             viewModel.hideSeriesOnList.subscribe {
                 binding.filterHideOnListCheckBox.isChecked = it
+            },
+            viewModel.hideCompleted.subscribe {
+                binding.filterHideCompletedCheckBox.isChecked = it
             },
             viewModel.onlyShowSeriesOnList.subscribe {
                 binding.filterShowOnListCheckBox.isChecked = it
@@ -448,6 +455,7 @@ class FilterFragment : BaseFragment<FragmentFilterBinding, FilterViewModel>() {
                 binding.filterCompletedYearLayout.show(it)
                 binding.filterPriorityLayout.show(it)
                 binding.filterHideOnListLayout.show(!it)
+                binding.filterHideCompletedLayout.show(!it)
                 binding.filterShowOnListLayout.show(!it)
             },
             viewModel.tagFilterVisibility.subscribe {

@@ -45,6 +45,7 @@ data class MediaFilter(
     var maxUserCompletedYear: Int? = null,
     var minUserPriority: Int? = null,
     var maxUserPriority: Int? = null,
+    var hideCompleted: Boolean = false,
     var isDoujin: Boolean? = null,
     var onList: Boolean? = null
 ) {

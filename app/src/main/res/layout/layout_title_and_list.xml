@@ -42,7 +42,7 @@
         android:visibility="gone"
         android:id="@+id/footnoteText"
         style="?themeSmallFont"
-        android:textColor="?themeDividerColor"
+        android:textColor="?themeContentTransparentColor"
         app:layout_constraintTop_toBottomOf="@+id/listRecyclerView"
         android:layout_marginTop="@dimen/marginBig"
         android:layout_marginHorizontal="@dimen/marginPageBig"

@@ -77,6 +77,10 @@ class SeasonalFragment : BaseFragment<FragmentSeasonalBinding, SeasonalViewModel
                 viewModel.updateHideSeriesOnList(seriesHideSeriesCheckBox.isChecked)
             }
 
+            seriesHideCompletedCheckBox.setOnClickListener {
+                viewModel.updateHideCompleted(seriesHideCompletedCheckBox.isChecked)
+            }
+
             seriesShowSeriesCheckBox.setOnClickListener {
                 viewModel.updateOnlyShowSeriesOnList(seriesShowSeriesCheckBox.isChecked)
             }
@@ -130,6 +134,9 @@ class SeasonalFragment : BaseFragment<FragmentSeasonalBinding, SeasonalViewModel
             },
             viewModel.onlyShowSeriesOnList.subscribe {
                 binding.seriesShowSeriesCheckBox.isChecked = it
+            },
+            viewModel.hideCompleted.subscribe {
+                binding.seriesHideCompletedCheckBox.isChecked = it
             },
             viewModel.showAdult.subscribe {
                 binding.seriesShowAdultContentCheckBox.isChecked = it

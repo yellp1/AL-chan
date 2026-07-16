@@ -214,6 +214,7 @@ class HomeViewModel(
         list.add(ListItem(R.string.explore_characters, SearchCategory.CHARACTER))
         list.add(ListItem(R.string.explore_staff, SearchCategory.STAFF))
         list.add(ListItem(R.string.explore_studios, SearchCategory.STUDIO))
+        list.add(ListItem(R.string.search_users, SearchCategory.USER))
         _exploreCategoryList.onNext(list)
     }
 

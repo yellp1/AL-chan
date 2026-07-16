@@ -122,6 +122,10 @@ class FilterViewModel(
     val priorities: Observable<NullableItem<Pair<Int, Int>>>
         get() = _priorities
 
+    private val _hideCompleted = BehaviorSubject.createDefault(false)
+    val hideCompleted: Observable<Boolean>
+        get() = _hideCompleted
+
     private val _hideSeriesOnList = BehaviorSubject.createDefault(false)
     val hideSeriesOnList: Observable<Boolean>
         get() = _hideSeriesOnList
@@ -356,6 +360,7 @@ class FilterViewModel(
                 updateStartYears(minUserStartYear, maxUserStartYear)
                 updateCompletedYears(minUserCompletedYear, maxUserCompletedYear)
                 updatePriorities(minUserPriority, maxUserPriority)
+                updateHideCompleted(hideCompleted)
                 when (onList) {
                     true -> {
                         _hideSeriesOnList.onNext(false)
@@ -711,6 +716,11 @@ class FilterViewModel(
         }
 
         _priorities.onNext(priorities)
+    }
+
+    fun updateHideCompleted(shouldHideCompleted: Boolean) {
+        currentMediaFilter.hideCompleted = shouldHideCompleted
+        _hideCompleted.onNext(shouldHideCompleted)
     }
 
     fun updateHideSeriesOnList(shouldHideSeriesOnList: Boolean) {

@@ -152,7 +152,7 @@
     <com.google.android.material.textview.MaterialTextView
         android:text="@string/tendency_is_generated_automatically_based_on_user_stats_it_might_or_might_not_be_accurate"
         style="?themeSmallFont"
-        android:textColor="?themeDividerColor"
+        android:textColor="?themeContentTransparentColor"
         android:layout_marginTop="@dimen/marginBig"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>

@@ -59,7 +59,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             },
             viewModel.searchCategoryList.subscribe {
                 dialog.showListDialog(it) { data, _ ->
-                    navigation.navigateToSearch(data)
+                    navigation.navigateToExplore(data)
                 }
             },
             viewModel.exploreCategoryList.subscribe {

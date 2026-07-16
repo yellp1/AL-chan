@@ -138,6 +138,21 @@
                 <com.google.android.material.textview.MaterialTextView
                     style="?themeSmallFont"
                     android:maxLines="1"
+                    android:text="@string/hide_watched_series"
+                    android:layout_marginStart="@dimen/marginPageBig"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/seriesHideCompletedCheckBox"
+                    style="?themeRegularCheckBox"
+                    android:layout_marginStart="@dimen/marginNormal"
+                    android:layout_width="@dimen/iconSize"
+                    android:layout_height="@dimen/iconSize"/>
+
+                <com.google.android.material.textview.MaterialTextView
+                    style="?themeSmallFont"
+                    android:maxLines="1"
                     android:text="@string/only_show_series_on_my_list"
                     android:layout_marginStart="@dimen/marginPageBig"
                     android:layout_width="wrap_content"

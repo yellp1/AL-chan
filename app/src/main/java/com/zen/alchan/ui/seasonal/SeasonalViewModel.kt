@@ -68,6 +68,10 @@ class SeasonalViewModel(
     val onlyShowSeriesOnList: Observable<Boolean>
         get() = _onlyShowSeriesOnList
 
+    private val _hideCompleted = BehaviorSubject.createDefault(false)
+    val hideCompleted: Observable<Boolean>
+        get() = _hideCompleted
+
     private val _showAdult = BehaviorSubject.createDefault(false)
     val showAdult: Observable<Boolean>
         get() = _showAdult
@@ -149,8 +153,15 @@ class SeasonalViewModel(
                         } else {
                             previousPagesSeasonals.addAll(it.data)
 
+                            var finalMediaList = previousPagesSeasonals.toList()
+                            if (_hideCompleted.value == true) {
+                                finalMediaList = finalMediaList.filter { media ->
+                                    media.mediaListEntry?.status != MediaListStatus.COMPLETED
+                                }
+                            }
+
                             val items = ArrayList<SeasonalItem>()
-                            val previousPagesSeasonalsGroup = previousPagesSeasonals.groupBy { it.format }
+                            val previousPagesSeasonalsGroup = finalMediaList.groupBy { it.format }
                             formatOrder.forEach { format ->
                                 previousPagesSeasonalsGroup[format]?.let { media ->
                                     items.add(SeasonalItem(title = format.getString(), viewType = SeasonalItem.VIEW_TYPE_TITLE))
@@ -255,6 +266,11 @@ class SeasonalViewModel(
             _hideSeriesOnList.onNext(false)
 
         _onlyShowSeriesOnList.onNext(shouldOnlyShowSeriesOnList)
+        reloadData()
+    }
+
+    fun updateHideCompleted(shouldHideCompleted: Boolean) {
+        _hideCompleted.onNext(shouldHideCompleted)
         reloadData()
     }
 

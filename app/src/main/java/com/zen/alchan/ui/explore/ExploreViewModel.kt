@@ -131,7 +131,7 @@ class ExploreViewModel(
                         hasNextPage = it.pageInfo.hasNextPage
                         currentPage = it.pageInfo.currentPage
 
-                        val newSearchItems = it.data.map {
+                        var newSearchItems = it.data.map {
                             SearchItem(
                                 media = it as? Media ?: Media(),
                                 character = it as? Character ?: Character(),
@@ -140,6 +140,12 @@ class ExploreViewModel(
                                 user = it as? User ?: User(),
                                 searchCategory = currentSearchCategory
                             )
+                        }
+
+                        if (mediaFilter.hideCompleted) {
+                            newSearchItems = newSearchItems.filter {
+                                !(it.media.mediaListEntry?.status == com.zen.alchan.type.MediaListStatus.COMPLETED)
+                            }
                         }
 
                         if (isLoadingNextPage) {
@@ -177,7 +183,7 @@ class ExploreViewModel(
                 SearchCategory.CHARACTER -> R.string.explore_characters
                 SearchCategory.STAFF -> R.string.explore_staff
                 SearchCategory.STUDIO -> R.string.explore_studios
-                SearchCategory.USER -> R.string.search_users // should not be used
+                SearchCategory.USER -> R.string.search_users
             }
         )
         _filterVisibility.onNext(
@@ -187,7 +193,7 @@ class ExploreViewModel(
                 SearchCategory.CHARACTER -> false
                 SearchCategory.STAFF -> false
                 SearchCategory.STUDIO -> false
-                SearchCategory.USER -> false // should not be used
+                SearchCategory.USER -> false
             }
         )
 
@@ -212,6 +218,7 @@ class ExploreViewModel(
         list.add(ListItem(R.string.explore_characters, SearchCategory.CHARACTER))
         list.add(ListItem(R.string.explore_staff, SearchCategory.STAFF))
         list.add(ListItem(R.string.explore_studios, SearchCategory.STUDIO))
+        list.add(ListItem(R.string.search_users, SearchCategory.USER))
         _searchCategoryList.onNext(list)
     }
 
