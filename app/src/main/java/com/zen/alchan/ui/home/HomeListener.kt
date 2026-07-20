@@ -7,6 +7,8 @@ interface HomeListener {
 
     interface HeaderListener {
         fun showSearchDialog()
+        fun navigateToNotifications()
+        fun navigateToProfile()
     }
 
     interface MenuListener {

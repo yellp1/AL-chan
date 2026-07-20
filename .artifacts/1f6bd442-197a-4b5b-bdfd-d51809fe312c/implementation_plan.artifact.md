@@ -1,37 +1,40 @@
-# Implementation Plan - Unify Search and Explore
+# Implementation Plan - Fix Crash and UI Bugs in Persistent Search
 
-This plan details how to redirect the home page search bar to the "Explore" experience, providing filtering and detailed results for all search categories, including users.
+This plan addresses the crash reported after adding the Persistent Search tab and fixes several UI/navigation bugs.
 
 ## User Review Required
 
-> [!NOTE]
-> This change will effectively make `SearchFragment` unused in the main app flow, as its functionality is superseded by the more featured `ExploreFragment`. I will also enable "User" search within the Explore flow to maintain parity with the previous search bar functionality.
+> [!IMPORTANT]
+> - **Crash Root Cause:** `ExploreFragment` was adding shared observers without checking if they were already added. These observers were accessing `binding` after the view was destroyed, leading to a `NullPointerException`.
+> - **Navigation Bug:** Tab switching (specifically to the Profile tab when unauthenticated) was checking the wrong menu item because it assumed the viewpager index matched the menu index.
 
 ## Proposed Changes
 
-### [Home Page]
+### [UI Components - Explore]
 
-#### [MODIFY] [HomeFragment.kt](file:///Users/yellp1/Documents/GitHub/Personal%20Projects/AL-chan/app/src/main/java/com/zen/alchan/ui/home/HomeFragment.kt)
-- Update the `searchCategoryList` observer to call `navigation.navigateToExplore(data)` instead of `navigation.navigateToSearch(data)`.
+#### [MODIFY] [ExploreFragment.kt](file:///Users/yellp1/Documents/GitHub/Personal%20Projects/AL-chan/app/src/main/java/com/zen/alchan/ui/explore/ExploreFragment.kt)
+- Wrap `sharedViewModel` subscription in `if (!sharedDisposablesAdded)`.
+- Use a safe check for `_binding` inside the subscription to avoid NPE if the view is destroyed.
+- Remove redundant `viewModel.loadData` call in `setUpObserver`.
+- Read `isTopLevel` from `arguments` in `setUpLayout`.
 
-#### [MODIFY] [HomeViewModel.kt](file:///Users/yellp1/Documents/GitHub/Personal%20Projects/AL-chan/app/src/main/java/com/zen/alchan/ui/home/HomeViewModel.kt)
-- Update `loadExploreCategories()` to include `SearchCategory.USER` using `R.string.search_users`.
-- (Optional) Clean up `loadSearchCategories()` to use the same logic/list as `loadExploreCategories()` to ensure consistency.
+### [UI Components - Main Navigation]
 
----
+#### [MODIFY] [MainFragment.kt](file:///Users/yellp1/Documents/GitHub/Personal%20Projects/AL-chan/app/src/main/java/com/zen/alchan/ui/main/MainFragment.kt)
+- Update `onPageSelected` to correctly map the `ViewPager2` position to the `BottomNavigationView` item ID, even when items are hidden (unauthenticated mode).
 
-### [Explore Page]
-
-#### [MODIFY] [ExploreViewModel.kt](file:///Users/yellp1/Documents/GitHub/Personal%20Projects/AL-chan/app/src/main/java/com/zen/alchan/ui/explore/ExploreViewModel.kt)
-- Update `updateSelectedSearchCategory()`: Remove `// should not be used` comments for `SearchCategory.USER`.
-- Update `loadSearchCategories()` (the category selection inside Explore) to include `SearchCategory.USER`.
+#### [MODIFY] [SharedMainViewModel.kt](file:///Users/yellp1/Documents/GitHub/Personal%20Projects/AL-chan/app/src/main/java/com/zen/alchan/ui/main/SharedMainViewModel.kt)
+- Fix the `scrollEvents` map: map `Page.HOME` to `_scrollHomeToTop` instead of `_scrollAnimeToTop`.
 
 ---
 
 ## Verification Plan
 
+### Automated Tests
+- No automated tests available for UI lifecycle, will verify manually.
+
 ### Manual Verification
-1.  **Search Bar:** Click the search bar on the Home page. Select "Anime". Verify it opens the `ExploreFragment` (with the filter icon and detailed cards).
-2.  **Explore Button:** Click "Explore" in the menu. Select "Anime". Verify it still works as expected.
-3.  **User Search:** Click the search bar, select "Users". Verify it opens the Explore page and correctly searches for users (even if filtering is disabled for this category).
-4.  **Filtering:** Ensure that after searching via the search bar, you can still open and apply filters.
+1.  **Crash Fix:** Navigate between tabs, background the app, and switch categories from Home. Ensure no crashes occur.
+2.  **Unauthenticated Navigation:** Log out, and ensure that clicking "Profile" in the bottom navigation correctly highlights the Profile icon and doesn't switch to a hidden tab.
+3.  **Scroll to Top:** Click the Home icon while on the Home tab to ensure it scrolls to top (verifying the `SharedMainViewModel` fix).
+4.  **Top-Level Back Button:** Verify the Search tab correctly hides its back button when it's part of the bottom navigation.

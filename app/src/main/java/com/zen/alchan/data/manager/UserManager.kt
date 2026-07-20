@@ -40,4 +40,8 @@ interface UserManager {
     var lastNotificationId: Int?
 
     var lastAnnouncementId: String?
+
+    var exploreSearchQuery: String?
+    var exploreSearchCategory: String?
+    var exploreFilter: MediaFilter?
 }

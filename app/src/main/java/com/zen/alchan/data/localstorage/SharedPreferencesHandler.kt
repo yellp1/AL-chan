@@ -25,4 +25,7 @@ interface SharedPreferencesHandler {
     var lastAnnouncementId: String?
     var spotifyAccessToken: SpotifyAccessToken?
     var spotifyAccessTokenLastRetrieve: Long?
+    var exploreSearchQuery: String?
+    var exploreSearchCategory: String?
+    var exploreFilter: MediaFilter?
 }

@@ -2,6 +2,10 @@ package com.zen.alchan.ui.home
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.doOnLayout
+import androidx.core.view.updatePadding
 import com.zen.alchan.R
 import com.zen.alchan.data.entity.AppSetting
 import com.zen.alchan.data.response.anilist.Media
@@ -9,6 +13,9 @@ import com.zen.alchan.data.response.anilist.MediaList
 import com.zen.alchan.databinding.FragmentHomeBinding
 import com.zen.alchan.helper.enums.MediaType
 import com.zen.alchan.helper.extensions.applyTopPaddingInsets
+import com.zen.alchan.helper.extensions.clicks
+import com.zen.alchan.helper.extensions.show
+import com.zen.alchan.helper.utils.ImageUtil
 import com.zen.alchan.ui.base.BaseFragment
 import com.zen.alchan.ui.main.SharedMainViewModel
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
@@ -31,15 +38,36 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     override fun setUpLayout() {
         binding.apply {
-            homeAdapter = HomeRvAdapter(requireContext(), listOf(), null, AppSetting(), screenWidth, getHomeListener())
+            homeAdapter = HomeRvAdapter(requireContext(), listOf(), null, AppSetting(), 0, screenWidth, getHomeListener())
             homeRecyclerView.adapter = homeAdapter
 
             homeSwipeRefresh.setOnRefreshListener { viewModel.reloadData() }
+
+            homeStickyHeaderNotificationLayout.clicks { navigation.navigateToNotifications() }
+            homeStickyHeaderAvatarCard.clicks { navigation.navigateToUser(null, null) }
         }
     }
 
     override fun setUpInsets() {
+        val fragmentBinding = binding
+        val initialHeaderPaddingTop = fragmentBinding.homeStickyHeader.paddingTop
+        ViewCompat.setOnApplyWindowInsetsListener(fragmentBinding.homeStickyHeader) { view, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars())
+            view.updatePadding(top = initialHeaderPaddingTop + insets.top)
 
+            view.post {
+                if (isAdded && view.isAttachedToWindow) {
+                    val headerHeight = view.height
+                    fragmentBinding.homeRecyclerView.updatePadding(top = headerHeight)
+                    fragmentBinding.homeSwipeRefresh.setProgressViewOffset(
+                        false,
+                        0,
+                        headerHeight + (context?.resources?.getDimensionPixelSize(R.dimen.marginNormal) ?: 0)
+                    )
+                }
+            }
+            windowInsets
+        }
     }
 
     override fun setUpObserver() {
@@ -51,20 +79,33 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 binding.homeSwipeRefresh.isRefreshing = it
             },
             viewModel.adapterComponent.subscribe {
-                homeAdapter = HomeRvAdapter(requireContext(), listOf(), it.user, it.appSetting, screenWidth, getHomeListener())
+                homeAdapter = HomeRvAdapter(requireContext(), listOf(), it.user, it.appSetting, it.unreadNotificationCount, screenWidth, getHomeListener())
                 binding.homeRecyclerView.adapter = homeAdapter
+
+                binding.apply {
+                    it.user?.let { user ->
+                        homeStickyHeaderAvatarCard.show(true)
+                        if (it.appSetting.useCircularAvatarForProfile)
+                            ImageUtil.loadCircleImage(requireContext(), user.avatar.getImageUrl(it.appSetting), homeStickyHeaderAvatar)
+                        else
+                            ImageUtil.loadRectangleImage(requireContext(), user.avatar.getImageUrl(it.appSetting), homeStickyHeaderAvatar)
+                    } ?: homeStickyHeaderAvatarCard.show(false)
+
+                    homeStickyHeaderNotificationBadge.show(it.unreadNotificationCount > 0)
+                    homeStickyHeaderNotificationBadge.text = it.unreadNotificationCount.toString()
+                }
             },
             viewModel.homeItemList.subscribe {
                 homeAdapter?.updateData(it)
             },
             viewModel.searchCategoryList.subscribe {
                 dialog.showListDialog(it) { data, _ ->
-                    navigation.navigateToExplore(data)
+                    sharedViewModel.navigateTo(SharedMainViewModel.Page.EXPLORE, data)
                 }
             },
             viewModel.exploreCategoryList.subscribe {
                 dialog.showListDialog(it) { data, _ ->
-                    navigation.navigateToExplore(data)
+                    sharedViewModel.navigateTo(SharedMainViewModel.Page.EXPLORE, data)
                 }
             }
         )
@@ -94,6 +135,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         return object : HomeListener.HeaderListener {
             override fun showSearchDialog() {
                 viewModel.loadSearchCategories()
+            }
+
+            override fun navigateToNotifications() {
+                navigation.navigateToNotifications()
+            }
+
+            override fun navigateToProfile() {
+                navigation.navigateToUser(null, null)
             }
         }
     }

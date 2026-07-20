@@ -23,6 +23,7 @@ interface NavigationManager {
     fun navigateToSeasonal() {}
     fun navigateToExplore(searchCategory: SearchCategory, mediaFilter: MediaFilter? = null, action: ((() -> Unit) -> Unit)? = null) {}
     fun navigateToSocial() {}
+    fun navigateToNotifications() {}
     fun navigateToCalendar() {}
     fun navigateToReview() {}
     fun navigateToReader(review: Review, action: ((review: Review) -> Unit)) {}

@@ -45,6 +45,7 @@ import com.zen.alchan.ui.media.mediasocial.MediaSocialFragment
 import com.zen.alchan.ui.media.mediastats.MediaStatsFragment
 import com.zen.alchan.ui.media.staff.MediaStaffListFragment
 import com.zen.alchan.ui.medialist.MediaListFragment
+import com.zen.alchan.ui.notifications.NotificationsFragment
 import com.zen.alchan.ui.profile.ProfileFragment
 import com.zen.alchan.ui.reorder.ReorderFragment
 import com.zen.alchan.ui.review.ReviewFragment
@@ -114,6 +115,10 @@ class DefaultNavigationManager(
 
     override fun navigateToSocial() {
         stackPage(SocialFragment.newInstance())
+    }
+
+    override fun navigateToNotifications() {
+        stackPage(NotificationsFragment.newInstance())
     }
 
     override fun navigateToCalendar() {

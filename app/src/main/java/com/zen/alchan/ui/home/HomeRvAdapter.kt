@@ -26,6 +26,7 @@ class HomeRvAdapter(
     list: List<HomeItem>,
     private val user: User?,
     private val appSetting: AppSetting,
+    private val unreadNotificationCount: Int = 0,
     private val width: Int,
     private val listener: HomeListener
 ) : BaseRecyclerViewAdapter<HomeItem, ViewBinding>(list) {
@@ -74,14 +75,6 @@ class HomeRvAdapter(
                     welcomeText.text = context.getString(R.string.hello_user, user.name)
                 else
                     welcomeText.text = context.getString(R.string.hello)
-
-                user?.let {
-                    homeHeaderAvatar.show(true)
-                    if (appSetting.useCircularAvatarForProfile)
-                        ImageUtil.loadCircleImage(context, it.avatar.getImageUrl(appSetting), homeHeaderAvatar)
-                    else
-                        ImageUtil.loadRectangleImage(context, it.avatar.getImageUrl(appSetting), homeHeaderAvatar)
-                } ?: homeHeaderAvatar.show(false)
 
                 searchLayout.clicks { listener.headerListener.showSearchDialog() }
             }

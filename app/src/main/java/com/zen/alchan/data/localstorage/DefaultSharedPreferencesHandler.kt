@@ -83,6 +83,18 @@ class DefaultSharedPreferencesHandler(
         get() = getData(SPOTIFY_ACCESS_TOKEN_LAST_RETRIEVE)?.toLongOrNull()
         set(value) { setData(SPOTIFY_ACCESS_TOKEN_LAST_RETRIEVE, value.toString()) }
 
+    override var exploreSearchQuery: String?
+        get() = getData(EXPLORE_SEARCH_QUERY)
+        set(value) { setData(EXPLORE_SEARCH_QUERY, value) }
+
+    override var exploreSearchCategory: String?
+        get() = getData(EXPLORE_SEARCH_CATEGORY)
+        set(value) { setData(EXPLORE_SEARCH_CATEGORY, value) }
+
+    override var exploreFilter: MediaFilter?
+        get() = gson.fromJson(getData(EXPLORE_FILTER), MediaFilter::class.java)
+        set(value) { setData(EXPLORE_FILTER, gson.toJson(value)) }
+
     companion object {
         private const val BEARER_TOKEN = "bearerToken"
         private const val GUEST_LOGIN = "guestLogin"
@@ -101,5 +113,8 @@ class DefaultSharedPreferencesHandler(
         private const val LAST_ANNOUNCEMENT_ID = "lastAnnouncementId"
         private const val SPOTIFY_ACCESS_TOKEN = "spotifyAccessToken"
         private const val SPOTIFY_ACCESS_TOKEN_LAST_RETRIEVE = "spotifyAccessTokenLastRetrieve"
+        private const val EXPLORE_SEARCH_QUERY = "exploreSearchQuery"
+        private const val EXPLORE_SEARCH_CATEGORY = "exploreSearchCategory"
+        private const val EXPLORE_FILTER = "exploreFilter"
     }
 }

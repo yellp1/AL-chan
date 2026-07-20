@@ -21,4 +21,90 @@
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/homeStickyHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?themeBackgroundTransparent86Color"
+        android:elevation="4dp"
+        android:translationZ="4dp"
+        android:paddingTop="@dimen/marginNormal">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/lineWidth"
+            android:background="?themeDividerColor"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/homeStickyHeaderActionLayout"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="@dimen/marginPageNormal"
+            android:layout_marginBottom="@dimen/marginNormal"
+            android:gravity="center_vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/homeStickyHeaderNotificationLayout"
+                android:foreground="?selectableItemBackground"
+                android:padding="@dimen/iconPadding"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/homeStickyHeaderNotificationIcon"
+                    app:srcCompat="@drawable/ic_notification"
+                    app:tint="@color/white"
+                    android:layout_width="@dimen/iconSize"
+                    android:layout_height="@dimen/iconSize"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/homeStickyHeaderNotificationBadge"
+                    android:visibility="gone"
+                    android:gravity="center"
+                    android:background="@drawable/ic_filled_circle"
+                    android:backgroundTint="@color/brightRed"
+                    android:textColor="@color/white"
+                    android:textSize="8sp"
+                    style="?themeSmallFont"
+                    app:layout_constraintTop_toTopOf="@id/homeStickyHeaderNotificationIcon"
+                    app:layout_constraintBottom_toTopOf="@id/homeStickyHeaderNotificationIcon"
+                    app:layout_constraintStart_toEndOf="@id/homeStickyHeaderNotificationIcon"
+                    app:layout_constraintEnd_toEndOf="@id/homeStickyHeaderNotificationIcon"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    tools:text="1"
+                    tools:visibility="visible"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/homeStickyHeaderAvatarCard"
+                app:cardCornerRadius="100dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="2dp"
+                app:strokeColor="@color/white"
+                android:layout_marginStart="@dimen/marginNormal"
+                android:layout_width="40dp"
+                android:layout_height="40dp">
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/homeStickyHeaderAvatar"
+                    android:scaleType="centerCrop"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

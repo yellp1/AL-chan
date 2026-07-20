@@ -15,19 +15,23 @@ import com.zen.alchan.helper.extensions.applyTopPaddingInsets
 import com.zen.alchan.helper.extensions.clicks
 import com.zen.alchan.helper.extensions.show
 import com.zen.alchan.ui.base.BaseFragment
+import com.zen.alchan.ui.main.SharedMainViewModel
 import com.zen.alchan.ui.search.SearchRvAdapter
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.concurrent.TimeUnit
 
 class ExploreFragment : BaseFragment<FragmentExploreBinding, ExploreViewModel>() {
 
     override val viewModel: ExploreViewModel by viewModel()
+    private val sharedViewModel by sharedViewModel<SharedMainViewModel>()
 
     private var adapter: SearchRvAdapter? = null
 
     private var listener: ExploreListener? = null
     private var mediaFilter: MediaFilter? = null
+    private var isTopLevel: Boolean = false
 
     override fun generateViewBinding(
         inflater: LayoutInflater,
@@ -37,7 +41,9 @@ class ExploreFragment : BaseFragment<FragmentExploreBinding, ExploreViewModel>()
     }
 
     override fun setUpLayout() {
+        isTopLevel = arguments?.getBoolean(IS_TOP_LEVEL) ?: false
         with(binding) {
+            exploreBackButton.show(!isTopLevel)
             exploreBackButton.clicks {
                 goBack()
             }
@@ -85,6 +91,18 @@ class ExploreFragment : BaseFragment<FragmentExploreBinding, ExploreViewModel>()
     }
 
     override fun setUpObserver() {
+        if (!sharedDisposablesAdded) {
+            sharedDisposables.add(
+                sharedViewModel.searchCategoryUpdate.subscribe {
+                    if (view != null) {
+                        binding.exploreRecyclerView.scrollToPosition(0)
+                        viewModel.updateSelectedSearchCategory(it, true)
+                    }
+                }
+            )
+            sharedDisposablesAdded = true
+        }
+
         disposables.add(
             binding.exploreEditText.textChanges()
                 .skipInitialValue()
@@ -95,32 +113,41 @@ class ExploreFragment : BaseFragment<FragmentExploreBinding, ExploreViewModel>()
 
         disposables.addAll(
             viewModel.loading.subscribe {
-                binding.exploreSwipeRefresh.isRefreshing = it
+                if (view != null) binding.exploreSwipeRefresh.isRefreshing = it
             },
             viewModel.error.subscribe {
                 dialog.showToast(it)
             },
             viewModel.appSetting.subscribe {
-                adapter = SearchRvAdapter(requireContext(), listOf(), it, true, getSearchListener())
-                binding.exploreRecyclerView.adapter = adapter
+                if (view != null) {
+                    adapter = SearchRvAdapter(requireContext(), listOf(), it, true, getSearchListener())
+                    binding.exploreRecyclerView.adapter = adapter
+                }
             },
             viewModel.searchItems.subscribe {
-                adapter?.updateData(it, true)
+                if (view != null) {
+                    if (binding.exploreEditText.text.isNullOrEmpty() && viewModel.userManager.exploreSearchQuery?.isNotEmpty() == true) {
+                        binding.exploreEditText.setText(viewModel.userManager.exploreSearchQuery)
+                    }
+                    adapter?.updateData(it, true)
+                }
             },
             viewModel.emptyLayoutVisibility.subscribe {
-                binding.emptyLayout.emptyLayout.show(it)
+                if (view != null) binding.emptyLayout.emptyLayout.show(it)
             },
             viewModel.searchCategoryList.subscribe {
                 dialog.showListDialog(it) { data, _ ->
-                    binding.exploreRecyclerView.scrollToPosition(0)
-                    viewModel.updateSelectedSearchCategory(data, true)
+                    if (view != null) {
+                        binding.exploreRecyclerView.scrollToPosition(0)
+                        viewModel.updateSelectedSearchCategory(data, true)
+                    }
                 }
             },
             viewModel.searchPlaceholderText.subscribe {
-                binding.exploreEditText.hint = getString(it)
+                if (view != null) binding.exploreEditText.hint = getString(it)
             },
             viewModel.filterVisibility.subscribe {
-                binding.exploreSettingButton.show(it)
+                if (view != null) binding.exploreSettingButton.show(it)
             },
             viewModel.mediaFilterComponent.subscribe {
                 navigation.navigateToFilter(it.mediaFilter, it.mediaType, it.scoreFormat, it.isUserList, it.hasBigList, it.isViewer) {
@@ -128,14 +155,12 @@ class ExploreFragment : BaseFragment<FragmentExploreBinding, ExploreViewModel>()
                 }
             },
             viewModel.scrollToTopTrigger.subscribe {
-                binding.exploreRecyclerView.scrollToPosition(0)
+                if (view != null) binding.exploreRecyclerView.scrollToPosition(0)
             }
         )
 
-        arguments?.getString(SEARCH_CATEGORY)?.let {
-            viewModel.loadData(ExploreParam(SearchCategory.valueOf(it), mediaFilter))
-            mediaFilter = null
-        }
+        viewModel.loadData(ExploreParam(SearchCategory.valueOf(arguments?.getString(SEARCH_CATEGORY) ?: SearchCategory.ANIME.name), mediaFilter))
+        mediaFilter = null
     }
 
     private fun getSearchListener(): SearchRvAdapter.SearchListener {
@@ -197,14 +222,17 @@ class ExploreFragment : BaseFragment<FragmentExploreBinding, ExploreViewModel>()
 
     companion object {
         private const val SEARCH_CATEGORY = "searchCategory"
+        private const val IS_TOP_LEVEL = "isTopLevel"
 
         @JvmStatic
-        fun newInstance(searchCategory: SearchCategory, mediaFilter: MediaFilter? = null, listener: ExploreListener? = null) = ExploreFragment().apply {
+        fun newInstance(searchCategory: SearchCategory, mediaFilter: MediaFilter? = null, listener: ExploreListener? = null, isTopLevel: Boolean = false) = ExploreFragment().apply {
             arguments = Bundle().apply {
                 putString(SEARCH_CATEGORY, searchCategory.name)
+                putBoolean(IS_TOP_LEVEL, isTopLevel)
             }
             this.mediaFilter = mediaFilter
             this.listener = listener
+            this.isTopLevel = isTopLevel
         }
     }
 

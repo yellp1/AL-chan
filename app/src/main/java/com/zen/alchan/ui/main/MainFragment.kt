@@ -10,6 +10,7 @@ import com.zen.alchan.helper.enums.MediaType
 import com.zen.alchan.helper.utils.DeepLink
 import com.zen.alchan.helper.utils.PushNotificationUtil
 import com.zen.alchan.ui.base.BaseFragment
+import com.zen.alchan.ui.explore.ExploreFragment
 import com.zen.alchan.ui.home.HomeFragment
 import com.zen.alchan.ui.medialist.MediaListFragment
 import com.zen.alchan.ui.notifications.NotificationsFragment
@@ -31,10 +32,9 @@ class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel>() {
 
     private var fragments: List<Fragment?>? = null
     private var homeFragment: HomeFragment? = null
+    private var exploreFragment: ExploreFragment? = null
     private var animeListFragment: MediaListFragment? = null
     private var mangaListFragment: MediaListFragment? = null
-    private var notificationsFragment: NotificationsFragment? = null
-    private var profileFragment: ProfileFragment? = null
 
     private var deepLink: DeepLink? = null
 
@@ -50,23 +50,21 @@ class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel>() {
             val isViewerAuthenticated = viewModel.isViewerAuthenticated
 
             homeFragment = HomeFragment.newInstance()
-            notificationsFragment = NotificationsFragment.newInstance()
+            exploreFragment = ExploreFragment.newInstance(com.zen.alchan.helper.enums.SearchCategory.ANIME, isTopLevel = true)
             animeListFragment = MediaListFragment.newInstance(MediaType.ANIME)
             mangaListFragment = MediaListFragment.newInstance(MediaType.MANGA)
-            profileFragment = ProfileFragment.newInstance()
 
             fragments = if (isViewerAuthenticated) {
                 listOf(
                     homeFragment,
+                    exploreFragment,
                     animeListFragment,
-                    mangaListFragment,
-                    notificationsFragment,
-                    profileFragment
+                    mangaListFragment
                 )
             } else {
                 listOf(
                     homeFragment,
-                    profileFragment
+                    exploreFragment
                 )
             }
 
@@ -82,30 +80,37 @@ class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel>() {
 
             binding.mainBottomNavigation.menu.findItem(R.id.menuAnime).isVisible = isViewerAuthenticated
             binding.mainBottomNavigation.menu.findItem(R.id.menuManga).isVisible = isViewerAuthenticated
-            binding.mainBottomNavigation.menu.findItem(R.id.menuNotifications).isVisible = isViewerAuthenticated
 
             mainViewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                 override fun onPageSelected(position: Int) {
                     super.onPageSelected(position)
-                    mainBottomNavigation.menu[position].isChecked = true
+                    val itemId = fragments?.getOrNull(position)?.let { fragment ->
+                        when (fragment) {
+                            homeFragment -> R.id.menuHome
+                            exploreFragment -> R.id.menuExplore
+                            animeListFragment -> R.id.menuAnime
+                            mangaListFragment -> R.id.menuManga
+                            else -> null
+                        }
+                    }
+                    itemId?.let { mainBottomNavigation.menu.findItem(it).isChecked = true }
                 }
             })
 
             mainBottomNavigation.setOnItemSelectedListener {
-                if (it.itemId == R.id.menuNotifications)
-                    viewModel.clearUnreadNotificationCountBadge()
-
-                val index = if (fragments?.size == mainBottomNavigation.menu.size()) {
-                    it.order
-                } else {
-                    // manually manage the order
+                val index = fragments?.indexOfFirst { fragment ->
                     when (it.itemId) {
-                        R.id.menuHome -> 0
-                        R.id.menuProfile -> 1
-                        else -> 0
+                        R.id.menuHome -> fragment == homeFragment
+                        R.id.menuExplore -> fragment == exploreFragment
+                        R.id.menuAnime -> fragment == animeListFragment
+                        R.id.menuManga -> fragment == mangaListFragment
+                        else -> false
                     }
+                } ?: 0
+
+                if (index != -1) {
+                    mainViewPager.setCurrentItem(index, true)
                 }
-                mainViewPager.setCurrentItem(index, true)
                 true
             }
 
@@ -134,15 +139,6 @@ class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel>() {
             sharedDisposablesAdded = true
         }
 
-        disposables.add(
-            viewModel.unreadNotificationCount.subscribe {
-                if (it == 0)
-                    binding.mainBottomNavigation.removeBadge(R.id.menuNotifications)
-                else
-                    binding.mainBottomNavigation.getOrCreateBadge(R.id.menuNotifications).number = it
-            }
-        )
-
         deepLink?.let {
             handleDeepLinkNavigation(it)
         }
@@ -166,41 +162,26 @@ class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel>() {
                 }
             }
             deepLink.isNotifications() && isViewerAuthenticated -> {
-                val notificationsIndex = fragments?.indexOfFirst { it == notificationsFragment }
-                if (notificationsIndex != null && notificationsIndex != -1) {
-                    changeTabWithDelay(notificationsIndex)
-                    context?.let { PushNotificationUtil.clearAllPushNotification(it) }
-                }
+                context?.let { PushNotificationUtil.clearAllPushNotification(it) }
+                navigation.navigateToNotifications()
             }
             deepLink.isProfile() && isViewerAuthenticated -> {
-                val profileIndex = fragments?.indexOfFirst { it == profileFragment }
-                if (profileIndex != null && profileIndex != -1) {
-                    changeTabWithDelay(profileIndex)
-                }
+                navigation.navigateToUser(id = null, username = null)
             }
             deepLink.isAppSettings() && isViewerAuthenticated -> {
-                val profileIndex = fragments?.indexOfFirst { it == profileFragment }
-                if (profileIndex != null && profileIndex != -1) {
-                    binding.mainViewPager.currentItem = profileIndex
-                    navigation.navigateToSettings()
-                    navigation.navigateToAppSettings()
-                }
+                navigation.navigateToUser(id = null, username = null)
+                navigation.navigateToSettings()
+                navigation.navigateToAppSettings()
             }
             deepLink.isAniListSettings() && isViewerAuthenticated -> {
-                val profileIndex = fragments?.indexOfFirst { it == profileFragment }
-                if (profileIndex != null && profileIndex != -1) {
-                    binding.mainViewPager.currentItem = profileIndex
-                    navigation.navigateToSettings()
-                    navigation.navigateToAniListSettings()
-                }
+                navigation.navigateToUser(id = null, username = null)
+                navigation.navigateToSettings()
+                navigation.navigateToAniListSettings()
             }
             deepLink.isListSettings() && isViewerAuthenticated -> {
-                val profileIndex = fragments?.indexOfFirst { it == profileFragment }
-                if (profileIndex != null && profileIndex != -1) {
-                    binding.mainViewPager.currentItem = profileIndex
-                    navigation.navigateToSettings()
-                    navigation.navigateToListSettings()
-                }
+                navigation.navigateToUser(id = null, username = null)
+                navigation.navigateToSettings()
+                navigation.navigateToListSettings()
             }
             deepLink.isSpoiler() -> {
                 dialog.showSpoilerDialog(deepLink.getQueryParamOfOrNull("data") ?: "", null)
@@ -252,10 +233,9 @@ class MainFragment : BaseFragment<FragmentMainBinding, MainViewModel>() {
         viewPagerAdapter = null
         fragments = null
         homeFragment = null
-        notificationsFragment = null
+        exploreFragment = null
         animeListFragment = null
         mangaListFragment = null
-        profileFragment = null
     }
 
     companion object {

@@ -104,4 +104,16 @@ class DefaultUserManager(
     override var lastAnnouncementId: String?
         get() = sharedPreferencesHandler.lastAnnouncementId
         set(value) { sharedPreferencesHandler.lastAnnouncementId =  value }
+
+    override var exploreSearchQuery: String?
+        get() = sharedPreferencesHandler.exploreSearchQuery
+        set(value) { sharedPreferencesHandler.exploreSearchQuery = value }
+
+    override var exploreSearchCategory: String?
+        get() = sharedPreferencesHandler.exploreSearchCategory
+        set(value) { sharedPreferencesHandler.exploreSearchCategory = value }
+
+    override var exploreFilter: MediaFilter?
+        get() = sharedPreferencesHandler.exploreFilter
+        set(value) { sharedPreferencesHandler.exploreFilter = value }
 }

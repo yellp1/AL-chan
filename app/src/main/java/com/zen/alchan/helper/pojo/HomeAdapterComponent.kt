@@ -5,5 +5,6 @@ import com.zen.alchan.data.response.anilist.User
 
 data class HomeAdapterComponent(
     val user: User? = null,
-    val appSetting: AppSetting = AppSetting()
+    val appSetting: AppSetting = AppSetting(),
+    val unreadNotificationCount: Int = 0
 )

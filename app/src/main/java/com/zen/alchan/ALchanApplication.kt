@@ -168,7 +168,7 @@ class ALchanApplication : Application() {
         viewModel { HomeViewModel(get(), get(), get()) }
         viewModel { SearchViewModel(get(), get()) }
         viewModel { SeasonalViewModel(get(), get(), get()) }
-        viewModel { ExploreViewModel(get(), get()) }
+        viewModel { ExploreViewModel(get(), get(), get()) }
         viewModel { CalendarViewModel(get(), get()) }
         viewModel { ReviewViewModel(get(), get()) }
         viewModel { ReaderViewModel(get(), get(), get()) }

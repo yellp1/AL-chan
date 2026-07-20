@@ -23,7 +23,8 @@ import com.zen.alchan.type.ScoreFormat
 
 class ExploreViewModel(
     private val userRepository: UserRepository,
-    private val contentRepository: ContentRepository
+    private val contentRepository: ContentRepository,
+    val userManager: com.zen.alchan.data.manager.UserManager
 ) : BaseViewModel<ExploreParam>() {
 
     private val _appSetting = PublishSubject.create<AppSetting>()
@@ -71,6 +72,18 @@ class ExploreViewModel(
             this.mediaFilter = it.copy(sort = Sort.POPULARITY, orderByDescending = true)
         }
 
+        // Restore persisted state if loading for the first time as a tab
+        if (param.mediaFilter == null && currentSearchQuery.isEmpty()) {
+            userManager.exploreSearchQuery?.let { currentSearchQuery = it }
+            userManager.exploreSearchCategory?.let {
+                try {
+                    currentSearchCategory = SearchCategory.valueOf(it)
+                } catch (e: Exception) {
+                }
+            }
+            userManager.exploreFilter?.let { mediaFilter = it }
+        }
+
         loadOnce {
             updateSelectedSearchCategory(currentSearchCategory, false)
 
@@ -106,6 +119,7 @@ class ExploreViewModel(
         state = State.LOADING
 
         currentSearchQuery = searchQuery
+        userManager.exploreSearchQuery = searchQuery
 
         val page = if (isLoadingNextPage) currentPage + 1 else 1
 
@@ -176,6 +190,7 @@ class ExploreViewModel(
 
     fun updateSelectedSearchCategory(newSearchCategory: SearchCategory, shouldReload: Boolean) {
         currentSearchCategory = newSearchCategory
+        userManager.exploreSearchCategory = newSearchCategory.name
         _searchPlaceholderText.onNext(
             when (newSearchCategory) {
                 SearchCategory.ANIME -> R.string.explore_anime
@@ -241,6 +256,7 @@ class ExploreViewModel(
 
     fun updateMediaFilter(newFilter: MediaFilter) {
         mediaFilter = newFilter
+        userManager.exploreFilter = newFilter
         reloadData()
     }
 }

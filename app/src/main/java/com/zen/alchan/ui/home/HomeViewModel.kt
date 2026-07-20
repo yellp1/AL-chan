@@ -46,10 +46,13 @@ class HomeViewModel(
     override fun loadData(param: Unit) {
         loadOnce {
             disposables.add(
-                userRepository.getAppSetting()
-                    .zipWith(userRepository.getViewer(Source.CACHE)) { appSetting, user ->
-                        HomeAdapterComponent(user, appSetting)
-                    }
+                Observable.combineLatest(
+                    userRepository.getAppSetting(),
+                    userRepository.getViewer(Source.CACHE),
+                    userRepository.unreadNotificationCount
+                ) { appSetting, user, unreadCount ->
+                    HomeAdapterComponent(user, appSetting, unreadCount)
+                }
                     .applyScheduler()
                     .subscribe {
                         _adapterComponent.onNext(it)
